@@ -14,8 +14,3 @@ const convertToCSV = (data: any[]) => {
     const rows = data.map(row => Object.values(row).join(',')).join('\n');
     return `${headers}\n${rows}`;
 };
-
- /*// In Dashboard
-<button onClick={() => exportToCSV(data.endpoints, 'endpoints')}>
-    📥 Export CSV
-</button>*/

@@ -4,6 +4,9 @@ import { MetricsCard } from './MetricsCard';
 import { Chart } from './Chart';
 import { ErrorList } from './ErrorList';
 import io from 'socket.io-client';
+import { toast } from 'react-toastify';
+import { AIInsights } from './AIInsights';
+import { exportToCSV } from '../utils/export';
 
 
 export const Dashboard: React.FC = () => {
@@ -12,7 +15,9 @@ export const Dashboard: React.FC = () => {
     const [timeRange, setTimeRange] = useState('1 hour');
     const [socket, setSocket] = useState<any>(null);
     const [realtimeLogs, setRealtimeLogs] = useState<any[]>([]);
-
+    const [searchEndpoint, setSearchEndpoint] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [searchResults, setSearchResults] = useState<any[]>([]);
 
     useEffect(() => {
         fetchData();
@@ -35,8 +40,8 @@ export const Dashboard: React.FC = () => {
         });
 
         newSocket.on('error-alert', (data: any) => {
-            // Show notification
-            alert(`Error Alert: ${data.error.error_message}`);
+            toast.error
+                (`Error Alert: ${data.error.method} ${data.error.endpoint} - ${data.error.status_code} ${data.error.error_message}`);
         });
 
         return () => {
@@ -44,9 +49,35 @@ export const Dashboard: React.FC = () => {
         };
     }, []);
 
+    useEffect(() => {
+        if (!searchEndpoint.trim()) {
+            setSearchResults([]);
+            return;
+        }
+
+        const search = async () => {
+            try {
+                const response =
+                    await api.searchEndpoints(
+                        searchEndpoint,
+                        timeRange,
+                        statusFilter
+                    );
+
+                setSearchResults(
+                    response.data.data
+                );
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        search();
+    }, [searchEndpoint, timeRange, statusFilter]);
+
     const fetchData = async () => {
         try {
             const response = await api.getDashboard(timeRange);
+            console.log(response.data.data);
             setData(response.data.data);
             setLoading(false);
         } catch (error) {
@@ -55,10 +86,10 @@ export const Dashboard: React.FC = () => {
             setLoading(false);
         }
     };
-    
+
     if (loading) return <div>Loading...</div>;
 
-    if (!data) {return <div>No data available.</div>;}
+    if (!data) { return <div>No data available.</div>; }
 
     const { overview } = data;
 
@@ -156,14 +187,124 @@ export const Dashboard: React.FC = () => {
                         borderBottom: '1px solid #eee',
                         fontSize: '12px'
                     }}>
-                        <span style={{
-                            color: log.status_code >= 400 ? '#ff4444' : '#44ff44'
-                        }}>
+                        <span style={{ color: log.status_code >= 400 ? '#ff4444' : '#44ff44' }}>
                             ●
                         </span> {log.method} {log.endpoint} - {log.status_code} ({log.response_time}ms)
                     </div>
                 ))}
             </div>
+
+            <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+                <input
+                    type="text"
+                    placeholder="Search endpoint..."
+                    value={searchEndpoint}
+                    onChange={(e) => setSearchEndpoint(e.target.value)}
+                    style={{
+                        padding: '10px',
+                        borderRadius: '4px',
+                        border: '1px solid #ddd',
+                        flex: 1
+                    }}
+                />
+                <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    style={{
+                        padding: '10px',
+                        borderRadius: '4px',
+                        border: '1px solid #ddd'
+                    }}
+                >
+                    <option value="all">All Status</option>
+                    <option value="2xx">Success (2xx)</option>
+                    <option value="4xx">Client Errors (4xx)</option>
+                    <option value="5xx">Server Errors (5xx)</option>
+                </select>
+            </div>
+
+            {searchResults.length > 0 && (
+                <div
+                    style={{
+                        background: '#fff',
+                        padding: '20px',
+                        borderRadius: '8px',
+                        marginBottom: '20px'
+                    }}
+                >
+                    <h3>Endpoint Search Results</h3>
+
+                    {searchResults.map((item, index) => (
+                        <div
+                            key={index}
+                            style={{
+                                padding: '10px 0',
+                                borderBottom: '1px solid #eee'
+                            }}
+                        >
+                            <strong>{item.endpoint}</strong>
+
+                            {' | '}
+                            {item.method}
+
+                            {' | '}
+                            Requests: {item.request_count}
+
+                            {' | '}
+                            Avg:
+                            {Math.round(
+                                Number(item.avg_response_time)
+                            )}ms
+
+                            {' | '}
+                            Errors:
+                            {item.error_count}
+                        </div>
+                    ))}
+
+                    <div style={{
+                        marginBottom: '20px',
+                        display: 'flex',
+                        justifyContent: 'flex-end'
+                    }}>
+                        <button
+                            onClick={() => {
+                                exportToCSV(data.endpoints, 'endpoints');
+                                toast.success('CSV exported successfully!');
+                            }}
+                            style={{
+                                padding: '10px 15px',
+                                borderRadius: '4px',
+                                border: 'none',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Export CSV
+                        </button>
+                    </div>
+                </div>
+
+
+            )}
+
+            {searchEndpoint && searchResults.length === 0 && (
+                <div
+                    style={{
+                        background: '#fff',
+                        padding: '20px',
+                        borderRadius: '8px',
+                        marginBottom: '20px'
+                    }}
+                >
+                    No endpoints found.
+                </div>
+            )}
+
+            <div style={{ marginTop: '20px' }}>
+                <AIInsights />
+            </div>
+
         </div>
     );
 };
+

@@ -1,20 +1,29 @@
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = process.env.REACT_APP_API_URL;
 
 export const api = {
-    getDashboard: (timeRange: string = '1 hour') => 
+    getDashboard: (timeRange: string = '1 hour') =>
         axios.get(`${API_BASE}/dashboard?timeRange=${timeRange}`),
-    
-    getMetrics: (timeRange: string = '1 hour') => 
+
+    getMetrics: (timeRange: string = '1 hour') =>
         axios.get(`${API_BASE}/metrics?timeRange=${timeRange}`),
-    
-    getErrors: () => 
+
+    getErrors: () =>
         axios.get(`${API_BASE}/errors`),
-    
-    getAIAnalysis: () => 
+
+    searchEndpoints(search: string, timeRange: string, statusFilter: string) {
+        return axios.get(
+            `${API_BASE}/dashboard/search-endpoints`,
+            {
+                params: { search, timeRange, statusFilter }
+            }
+        );
+    },
+
+    getAIAnalysis: () =>
         axios.get(`${API_BASE}/ai/analyze-errors`),
-    
-    getAnomalies: () => 
+
+    getAnomalies: () =>
         axios.get(`${API_BASE}/ai/detect-anomalies`)
 };
