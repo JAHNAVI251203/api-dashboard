@@ -13,7 +13,6 @@ export const Dashboard: React.FC = () => {
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [timeRange, setTimeRange] = useState('1 hour');
-    const [socket, setSocket] = useState<any>(null);
     const [realtimeLogs, setRealtimeLogs] = useState<any[]>([]);
     const [searchEndpoint, setSearchEndpoint] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -23,12 +22,13 @@ export const Dashboard: React.FC = () => {
         fetchData();
         const interval = setInterval(fetchData, 30000); //refresh every 30s
         return () => clearInterval(interval);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [timeRange]);
 
     useEffect(() => {
         //const newSocket = io('http://localhost:8000');
         const newSocket = io("https://ai-api-analytics-platform-production.up.railway.app");
-        setSocket(newSocket);
+        //setSocket(newSocket);
 
         newSocket.on('connect', () => {
             console.log('Connected to WebSocket');
