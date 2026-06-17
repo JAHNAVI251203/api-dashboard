@@ -26,7 +26,8 @@ export const Dashboard: React.FC = () => {
     }, [timeRange]);
 
     useEffect(() => {
-        const newSocket = io('http://localhost:8000');
+        //const newSocket = io('http://localhost:8000');
+        const newSocket = io("https://ai-api-analytics-platform-production.up.railway.app");
         setSocket(newSocket);
 
         newSocket.on('connect', () => {
