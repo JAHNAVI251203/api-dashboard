@@ -4,10 +4,9 @@ A full-stack monitoring platform that provides real-time API analytics, error tr
 
 ## Live Demo
 
-Frontend: https://your-vercel-url.vercel.app
+Frontend: https://ai-api-analytics-dashboard.vercel.app/
 
-Backend API:
-https://your-railway-url.up.railway.app
+Backend: https://ai-api-analytics-platform-production.up.railway.app/
 
 ---
 
@@ -46,7 +45,7 @@ https://your-railway-url.up.railway.app
 - Redis
 - BullMQ
 - Socket.io
-- Gemini AI
+- Gemini AI & OpenRouter
 
 ### Deployment
 - Vercel
@@ -57,7 +56,46 @@ https://your-railway-url.up.railway.app
 
 ## Architecture
 
-(Insert architecture diagram)
+
+---
+
+# 2. Architecture Diagram
+
+
+                    ┌─────────────────┐
+                    │     Users       │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │ React Dashboard │
+                    │  (Vercel)       │
+                    └────────┬────────┘
+                             │
+                  REST APIs  │ WebSockets
+                             ▼
+              ┌──────────────────────────┐
+              │ Express Backend          │
+              │ Railway Deployment       │
+              └──────┬─────────┬─────────┘
+                     │         │
+                     │         │
+                     ▼         ▼
+            ┌────────────┐ ┌────────────┐
+            │ PostgreSQL │ │   Redis    │
+            │ Analytics  │ │   Cache    │
+            └────────────┘ └────────────┘
+                     │
+                     ▼
+            ┌────────────────┐
+            │ BullMQ Workers │
+            └───────┬────────┘
+                    │
+                    ▼
+            ┌────────────────┐
+            │ Gemini AI      │
+            │ Error Analysis │
+            └────────────────┘
 
 ---
 
