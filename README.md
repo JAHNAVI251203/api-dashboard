@@ -1,46 +1,87 @@
-# Getting Started with Create React App
+# AI-Powered API Analytics & Monitoring Platform
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A full-stack monitoring platform that provides real-time API analytics, error tracking, anomaly detection, AI-powered error analysis, and performance monitoring.
 
-## Available Scripts
+## Live Demo
 
-In the project directory, you can run:
+Frontend: https://your-vercel-url.vercel.app
 
-### `npm start`
+Backend API:
+https://your-railway-url.up.railway.app
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+---
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Features
 
-### `npm test`
+- Real-time API monitoring
+- API request analytics dashboard
+- Error tracking & grouping
+- AI-powered error analysis using Gemini AI
+- Anomaly detection system
+- Background job processing with BullMQ
+- Redis caching
+- Search & filtering
+- CSV export
+- Toast notifications
+- WebSocket live updates
+- Dockerized deployment
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## Tech Stack
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Frontend
+- React
+- TypeScript
+- Axios
+- Recharts
+- Socket.io Client
+- React Toastify
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Backend
+- Node.js
+- Express
+- TypeScript
+- PostgreSQL
+- Redis
+- BullMQ
+- Socket.io
+- Gemini AI
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Deployment
+- Vercel
+- Railway
+- Docker
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## Architecture
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+(Insert architecture diagram)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+---
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## Screenshots
 
-## Learn More
+(Add dashboard screenshots)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## API Endpoints
+
+| Method | Endpoint | Description |
+|----------|----------|-------------|
+| GET | /health | Health check |
+| GET | /api/dashboard | Dashboard analytics |
+| POST | /api/logs | Ingest API logs |
+| POST | /api/ai/analyze-errors | AI error analysis |
+
+---
+
+## Installation
+
+### Clone Repository
+
+```bash
+git clone <repo-url>
+cd api-analytics
