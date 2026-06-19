@@ -96,7 +96,8 @@ export const Dashboard: React.FC = () => {
 
     return (
         <div style={{ padding: '20px', background: '#f5f5f5', minHeight: '100vh' }}>
-            <h1>API Analytics Dashboard</h1>
+            <h1>API Sentinel</h1>
+            <p>AI-Powered API Analytics & Monitoring Platform</p>
 
             <div style={{ marginBottom: '20px' }}>
                 <select

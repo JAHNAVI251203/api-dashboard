@@ -1,5 +1,5 @@
 {
-  "name": "api-dashboard",
+  "name": "api-sentinel-dashboard",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
