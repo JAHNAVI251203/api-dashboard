@@ -27,7 +27,7 @@ export const Dashboard: React.FC = () => {
 
     useEffect(() => {
         //const newSocket = io('http://localhost:8000');
-        const newSocket = io(process.env.REACT_APP_SOCKET_URL!);        
+        const newSocket = io(process.env.REACT_APP_SOCKET_URL!);
         //setSocket(newSocket);
 
         newSocket.on('connect', () => {
@@ -79,6 +79,10 @@ export const Dashboard: React.FC = () => {
         try {
             const response = await api.getDashboard(timeRange);
             console.log(response.data.data);
+            console.log("FULL RESPONSE:", response);
+            console.log("RESPONSE DATA:", response.data);
+            console.log("DASHBOARD DATA:", response.data.data);
+
             setData(response.data.data);
             setLoading(false);
         } catch (error) {
