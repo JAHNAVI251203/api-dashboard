@@ -1,35 +1,21 @@
-# AI-Powered API Analytics & Monitoring Platform
+# 📊 API Sentinel Dashboard
 
-A full-stack monitoring platform that provides real-time API analytics, error tracking, anomaly detection, AI-powered error analysis, and performance monitoring.
+Frontend dashboard for the API Sentinel platform.
 
-## Live Demo
+Provides real-time API monitoring, analytics visualization, AI-powered insights, and alert monitoring.
 
-Frontend: https://ai-api-analytics-dashboard.vercel.app/
+## ✨ Features
 
-Backend: https://ai-api-analytics-platform-production.up.railway.app/
-
----
-
-## Features
-
-- Real-time API monitoring
-- API request analytics dashboard
-- Error tracking & grouping
-- AI-powered error analysis using Gemini AI
-- Anomaly detection system
-- Background job processing with BullMQ
-- Redis caching
-- Search & filtering
+- Real-time dashboard updates using Socket.io
+- Interactive charts and metrics visualization
+- AI error analysis display
+- Endpoint search and filtering
 - CSV export
 - Toast notifications
-- WebSocket live updates
-- Dockerized deployment
+- Responsive UI
 
----
+## 🛠 Tech Stack
 
-## Tech Stack
-
-### Frontend
 - React
 - TypeScript
 - Axios
@@ -37,89 +23,46 @@ Backend: https://ai-api-analytics-platform-production.up.railway.app/
 - Socket.io Client
 - React Toastify
 
-### Backend
-- Node.js
-- Express
-- TypeScript
-- PostgreSQL
-- Redis
-- BullMQ
-- Socket.io
-- Gemini AI & OpenRouter
+## 🚀 Local Setup
 
-### Deployment
-- Vercel
-- Railway
-- Docker
-
----
-
-## Architecture
-
-
----
-
-# 2. Architecture Diagram
-
-
-                    ┌─────────────────┐
-                    │     Users       │
-                    └────────┬────────┘
-                             │
-                             ▼
-                    ┌─────────────────┐
-                    │ React Dashboard │
-                    │  (Vercel)       │
-                    └────────┬────────┘
-                             │
-                  REST APIs  │ WebSockets
-                             ▼
-              ┌──────────────────────────┐
-              │ Express Backend          │
-              │ Railway Deployment       │
-              └──────┬─────────┬─────────┘
-                     │         │
-                     │         │
-                     ▼         ▼
-            ┌────────────┐ ┌────────────┐
-            │ PostgreSQL │ │   Redis    │
-            │ Analytics  │ │   Cache    │
-            └────────────┘ └────────────┘
-                     │
-                     ▼
-            ┌────────────────┐
-            │ BullMQ Workers │
-            └───────┬────────┘
-                    │
-                    ▼
-            ┌────────────────┐
-            │ Gemini AI      │
-            │ Error Analysis │
-            └────────────────┘
-
----
-
-## Screenshots
-
-(Add dashboard screenshots)
-
----
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|----------|----------|-------------|
-| GET | /health | Health check |
-| GET | /api/dashboard | Dashboard analytics |
-| POST | /api/logs | Ingest API logs |
-| POST | /api/ai/analyze-errors | AI error analysis |
-
----
-
-## Installation
-
-### Clone Repository
+1. Install dependencies
 
 ```bash
-git clone <repo-url>
-cd api-analytics
+npm install
+```
+
+2. Create environment file
+
+```env
+REACT_APP_API_URL=http://localhost:8000
+REACT_APP_SOCKET_URL=http://localhost:8000
+```
+
+3. Start development server
+
+```bash
+npm start
+```
+
+Application runs at:
+
+```text
+http://localhost:3000
+```
+
+## 🌐 Live Demo
+
+Frontend:
+https://ai-api-analytics-dashboard.vercel.app
+
+Backend:
+https://ai-api-analytics-platform-production.up.railway.app
+
+## 📦 Backend Repository
+
+See the backend repository for:
+
+- API documentation
+- Database schema
+- Deployment guide
+- Architecture details
