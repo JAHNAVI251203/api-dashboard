@@ -12,7 +12,7 @@ import { exportToCSV } from '../utils/export';
 export const Dashboard: React.FC = () => {
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [timeRange, setTimeRange] = useState('1 hour');
+    const [timeRange, setTimeRange] = useState('7 days');
     const [realtimeLogs, setRealtimeLogs] = useState<any[]>([]);
     const [searchEndpoint, setSearchEndpoint] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
