@@ -152,7 +152,7 @@ export const Dashboard: React.FC = () => {
                     boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                 }}>
                     <h3>AI Summary</h3>
-                    <p>{data.aiSummary}</p>
+                    <p>{data.aiSummary || "No AI summary available"}</p>
                 </div>
             )}
 
