@@ -184,8 +184,7 @@ export const Dashboard: React.FC = () => {
                 padding: '20px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                 maxHeight: '400px',
-                overflow: 'auto',
-                marginBottom: '30px'
+                overflow: 'auto'
             }}>
                 <h3>Live Activity</h3>
                 {realtimeLogs.map((log, i) => (
@@ -201,7 +200,7 @@ export const Dashboard: React.FC = () => {
                 ))}
             </div>
 
-            <div style={{ marginTop: '30px', marginBottom: '20px', display: 'flex', gap: '10px' }}>
+            <div style={{ marginTop: '20px', marginBottom: '20px', display: 'flex', gap: '10px' }}>
                 <input
                     type="text"
                     placeholder="Search endpoint..."
