@@ -201,7 +201,7 @@ export const Dashboard: React.FC = () => {
                 ))}
             </div>
 
-            <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+            <div style={{ marginTop: '30px', marginBottom: '20px', display: 'flex', gap: '10px' }}>
                 <input
                     type="text"
                     placeholder="Search endpoint..."
