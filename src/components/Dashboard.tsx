@@ -184,7 +184,8 @@ export const Dashboard: React.FC = () => {
                 padding: '20px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                 maxHeight: '400px',
-                overflow: 'auto'
+                overflow: 'auto',
+                marginBottom: '30px'
             }}>
                 <h3>Live Activity</h3>
                 {realtimeLogs.map((log, i) => (
