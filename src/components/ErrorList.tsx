@@ -1,54 +1,42 @@
 import React from 'react';
-
-interface Error {
-    id: number;
-    error_message: string;
-    endpoint: string;
-    method: string;
-    occurrence_count: number;
-    last_seen: string;
-}
+import { TopError } from '../types/dashboard';
+import { Badge } from './ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 
 interface ErrorListProps {
-    errors: Error[];
+    errors: TopError[];
+    dataSource?: 'live' | 'sample';
 }
 
-export const ErrorList: React.FC<ErrorListProps> = ({ errors }) => {
-    return (
-        <div style={{
-            background: '#fff',
-            borderRadius: '8px',
-            padding: '20px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}>
-            <h3>Top Errors (Last 24h)</h3>
-            <div style={{ marginTop: '20px' }}>
-                {errors.map(error => (
-                    <div 
-                        key={error.id}
-                        style={{
-                            borderBottom: '1px solid #eee',
-                            padding: '15px 0'
-                        }}
-                    >
-                        <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between',
-                            marginBottom: '8px'
-                        }}>
-                            <span style={{ fontWeight: 'bold', color: '#ff4444' }}>
-                                {error.occurrence_count}× {error.method} {error.endpoint}
-                            </span>
-                            <span style={{ color: '#999', fontSize: '12px' }}>
-                                {new Date(error.last_seen).toLocaleString()}
-                            </span>
+export const ErrorList: React.FC<ErrorListProps> = ({ errors, dataSource = 'live' }) => (
+    <Card className="min-w-0">
+        <CardHeader>
+            <CardTitle>Top Errors (Last 24h)</CardTitle>
+            <CardDescription>
+                Repeated 4xx/5xx responses observed in the selected {dataSource} API data. Dashboard and server failures are reported separately.
+            </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-0">
+            {errors.length === 0 && <p className="text-sm text-muted-foreground">No monitored API errors found for this data source.</p>}
+            {errors.map(error => (
+                <div key={error.id} className="border-t border-border py-4 first:border-t-0 first:pt-0 last:pb-0">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex min-w-0 items-center gap-2">
+                            <Badge variant="destructive">{error.occurrence_count}×</Badge>
+                            <span className="truncate text-sm font-medium">{error.method} {error.endpoint}</span>
                         </div>
-                        <div style={{ color: '#666', fontSize: '14px' }}>
-                            {error.error_message}
-                        </div>
+                        <time className="text-xs text-muted-foreground" dateTime={error.last_seen}>
+                            {formatDate(error.last_seen)}
+                        </time>
                     </div>
-                ))}
-            </div>
-        </div>
-    );
+                    <p className="mt-2 text-xs text-muted-foreground">Repeated monitored API responses for this endpoint.</p>
+                </div>
+            ))}
+        </CardContent>
+    </Card>
+);
+
+const formatDate = (value: string) => {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? 'Recently observed' : date.toLocaleString();
 };

@@ -1,4 +1,6 @@
 import React from 'react';
+import { Badge } from './ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 interface MetricsCardProps {
     title: string;
@@ -7,30 +9,25 @@ interface MetricsCardProps {
     trend?: 'up' | 'down' | 'neutral';
 }
 
-export const MetricsCard: React.FC<MetricsCardProps> = ({ 
-    title, 
-    value, 
+export const MetricsCard: React.FC<MetricsCardProps> = ({
+    title,
+    value,
     subtext,
-    trend = 'neutral'
+    trend = 'neutral',
 }) => {
+    const trendLabel = trend === 'up' ? 'Improving' : trend === 'down' ? 'Watch' : 'Stable';
+    const trendVariant = trend === 'up' ? 'success' : trend === 'down' ? 'destructive' : 'outline';
+
     return (
-        <div style={{
-            background: '#fff',
-            borderRadius: '8px',
-            padding: '20px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}>
-            <div style={{ color: '#666', fontSize: '14px', marginBottom: '8px' }}>
-                {title}
-            </div>
-            <div style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px' }}>
-                {value}
-            </div>
-            {subtext && (
-                <div style={{ color: '#999', fontSize: '12px' }}>
-                    {subtext}
-                </div>
-            )}
-        </div>
+        <Card>
+            <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+                <Badge variant={trendVariant}>{trendLabel}</Badge>
+            </CardHeader>
+            <CardContent>
+                <div className="text-3xl font-semibold tracking-tight">{value}</div>
+                {subtext && <div className="mt-2 text-xs text-muted-foreground">{subtext}</div>}
+            </CardContent>
+        </Card>
     );
 };

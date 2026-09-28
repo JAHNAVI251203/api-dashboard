@@ -10,6 +10,8 @@ Provides real-time API monitoring, analytics visualization, AI-powered insights,
 - Interactive charts and metrics visualization
 - AI error analysis display
 - Endpoint search and filtering
+- Live/sample data filtering
+- Email/password authentication
 - CSV export
 - Toast notifications
 - Responsive UI
@@ -34,7 +36,7 @@ npm install
 2. Create environment file
 
 ```env
-REACT_APP_API_URL=http://localhost:8000
+REACT_APP_API_URL=http://localhost:8000/api
 REACT_APP_SOCKET_URL=http://localhost:8000
 ```
 

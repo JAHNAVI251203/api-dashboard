@@ -1,61 +1,65 @@
 import React from 'react';
 import {
-    LineChart,
-    Line,
-    AreaChart,
     Area,
+    AreaChart,
+    CartesianGrid,
+    Legend,
+    Line,
+    LineChart,
+    ResponsiveContainer,
+    Tooltip as RechartsTooltip,
     XAxis,
     YAxis,
-    CartesianGrid,
-    Tooltip,
-    Legend,
-    ResponsiveContainer
 } from 'recharts';
+import { TimeSeriesPoint } from '../types/dashboard';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 interface ChartProps {
-    data: any[];
+    data: TimeSeriesPoint[];
     type?: 'line' | 'area';
     title: string;
 }
 
-export const Chart: React.FC<ChartProps> = ({ data, type = 'line', title }) => {
-    const ChartComponent = type === 'line' ? LineChart : AreaChart;
-    const DataComponent = type === 'line' ? Line : Area;
-    
-    return (
-        <div style={{
-            background: '#fff',
-            borderRadius: '8px',
-            padding: '20px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}>
-            <h3 style={{ marginBottom: '20px' }}>{title}</h3>
-            <ResponsiveContainer width="100%" height={300}>
-                <ChartComponent data={data}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                        dataKey="time_bucket" 
-                        tickFormatter={(time) => new Date(time).toLocaleTimeString()}
-                    />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <DataComponent 
-                        type="monotone" 
-                        dataKey="request_count" 
-                        stroke="#178d56" 
-                        fill="#84d88c"
-                        name="Requests"
-                    />
-                    <DataComponent 
-                        type="monotone" 
-                        dataKey="error_count" 
-                        stroke="#ff4444" 
-                        fill="#ff4444"
-                        name="Errors"
-                    />
-                </ChartComponent>
-            </ResponsiveContainer>
-        </div>
-    );
+export const Chart: React.FC<ChartProps> = ({ data, type = 'line', title }) => (
+    <Card className="min-w-0">
+        <CardHeader>
+            <CardTitle>{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+            {data.length === 0 ? (
+                <div className="flex h-[300px] items-center justify-center text-sm text-muted-foreground">
+                    No request volume recorded for this range.
+                </div>
+            ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                    {type === 'line' ? (
+                        <LineChart data={data}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                            <XAxis dataKey="time_bucket" tickFormatter={formatTime} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                            <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                            <RechartsTooltip />
+                            <Legend />
+                            <Line type="monotone" dataKey="request_count" stroke="#0f766e" name="Requests" />
+                            <Line type="monotone" dataKey="error_count" stroke="#b91c1c" name="Errors" />
+                        </LineChart>
+                    ) : (
+                        <AreaChart data={data}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                            <XAxis dataKey="time_bucket" tickFormatter={formatTime} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                            <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                            <RechartsTooltip />
+                            <Legend />
+                            <Area type="monotone" dataKey="request_count" stroke="#0f766e" fill="#99f6e4" fillOpacity={0.45} name="Requests" />
+                            <Area type="monotone" dataKey="error_count" stroke="#b91c1c" fill="#fecaca" fillOpacity={0.45} name="Errors" />
+                        </AreaChart>
+                    )}
+                </ResponsiveContainer>
+            )}
+        </CardContent>
+    </Card>
+);
+
+const formatTime = (time: string) => {
+    const date = new Date(time);
+    return Number.isNaN(date.getTime()) ? time : date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 };
