@@ -1,13 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
-import { DataSource } from '../types/dashboard';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Badge } from './ui/badge';
 import { Skeleton } from './ui/skeleton';
-
-interface AIInsightsProps {
-    dataSource?: DataSource;
-}
 
 interface ErrorAnalysis {
     severity?: string;
@@ -25,7 +20,7 @@ interface Anomalies {
     recommendation?: string;
 }
 
-export const AIInsights: React.FC<AIInsightsProps> = ({ dataSource = 'live' }) => {
+export const AIInsights: React.FC = () => {
     const [errorAnalysis, setErrorAnalysis] = useState<ErrorAnalysis | null>(null);
     const [anomalies, setAnomalies] = useState<Anomalies | null>(null);
     const [loading, setLoading] = useState(true);
@@ -40,8 +35,8 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ dataSource = 'live' }) =
 
             try {
                 const [errorsRes, anomaliesRes] = await Promise.all([
-                    api.getAIAnalysis(dataSource),
-                    api.getAnomalies(dataSource),
+                    api.getAIAnalysis(),
+                    api.getAnomalies(),
                 ]);
 
                 if (!active) return;
@@ -60,7 +55,7 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ dataSource = 'live' }) =
             active = false;
             window.clearInterval(interval);
         };
-    }, [dataSource]);
+    }, []);
 
     if (loading) {
         return (
@@ -136,7 +131,7 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ dataSource = 'live' }) =
             )}
 
             {!errorAnalysis?.severity && !errorAnalysis?.message && !anomalies?.hasAnomaly && (
-                <p className="text-sm text-muted-foreground lg:col-span-2">No AI insights are available for this data source.</p>
+                <p className="text-sm text-muted-foreground lg:col-span-2">No AI insights are available for the current telemetry.</p>
             )}
         </div>
     );

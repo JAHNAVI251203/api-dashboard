@@ -50,27 +50,20 @@ export const api = {
     login: (name: string, email: string, password: string) =>
         client.post('/auth/login', { name, email, password }),
 
-    getDashboard: (timeRange: string = '1 hour', dataSource: 'live' | 'sample' = 'live') =>
-        client.get('/dashboard', { params: { timeRange, dataSource } }),
+    logout: () => client.post('/auth/logout'),
 
-    getMetrics: (timeRange: string = '1 hour') =>
-        client.get('/metrics', { params: { timeRange } }),
+    getDashboard: (timeRange: string = '1 hour') => client.get('/dashboard', { params: { timeRange } }),
 
-    getErrors: () =>
-        client.get('/errors'),
-
-    searchEndpoints(search: string, timeRange: string, statusFilter: string, dataSource: 'live' | 'sample' = 'live') {
+    searchEndpoints(search: string, timeRange: string, statusFilter: string) {
         return client.get(
             '/dashboard/search-endpoints',
             {
-                params: { search, timeRange, statusFilter, dataSource }
+                params: { search, timeRange, statusFilter }
             }
         );
     },
 
-    getAIAnalysis: (dataSource: 'live' | 'sample' = 'live') =>
-        client.get('/ai/analyze-errors', { params: { dataSource } }),
+    getAIAnalysis: () => client.get('/ai/analyze-errors'),
 
-    getAnomalies: (dataSource: 'live' | 'sample' = 'live') =>
-        client.get('/ai/detect-anomalies', { params: { dataSource } })
+    getAnomalies: () => client.get('/ai/detect-anomalies')
 };

@@ -3,21 +3,18 @@ import { TopError } from '../types/dashboard';
 import { Badge } from './ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 
-interface ErrorListProps {
-    errors: TopError[];
-    dataSource?: 'live' | 'sample';
-}
+interface ErrorListProps { errors: TopError[]; }
 
-export const ErrorList: React.FC<ErrorListProps> = ({ errors, dataSource = 'live' }) => (
+export const ErrorList: React.FC<ErrorListProps> = ({ errors }) => (
     <Card className="min-w-0">
         <CardHeader>
             <CardTitle>Top Errors (Last 24h)</CardTitle>
             <CardDescription>
-                Repeated 4xx/5xx responses observed in the selected {dataSource} API data. Dashboard and server failures are reported separately.
+                Repeated 4xx/5xx responses observed in real instrumented API traffic.
             </CardDescription>
         </CardHeader>
         <CardContent className="space-y-0">
-            {errors.length === 0 && <p className="text-sm text-muted-foreground">No monitored API errors found for this data source.</p>}
+            {errors.length === 0 && <p className="text-sm text-muted-foreground">No monitored API errors found.</p>}
             {errors.map(error => (
                 <div key={error.id} className="border-t border-border py-4 first:border-t-0 first:pt-0 last:pb-0">
                     <div className="flex flex-wrap items-center justify-between gap-2">

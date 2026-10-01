@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
 import { toast } from 'react-toastify';
 import { api } from '../services/api';
@@ -16,7 +16,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select } from './ui/select';
 import { Skeleton } from './ui/skeleton';
-import { DashboardData, DataSource, EndpointStats, MetricValue, RealtimeLog } from '../types/dashboard';
+import { DashboardData, EndpointStats, MetricValue, RealtimeLog } from '../types/dashboard';
 
 export const Dashboard: React.FC = () => {
     const [data, setData] = useState<DashboardData | null>(null);
@@ -24,13 +24,13 @@ export const Dashboard: React.FC = () => {
     const [dashboardError, setDashboardError] = useState(false);
     const [reloadKey, setReloadKey] = useState(0);
     const [timeRange, setTimeRange] = useState('7 days');
-    const [dataSource, setDataSource] = useState<DataSource>('live');
     const [realtimeLogs, setRealtimeLogs] = useState<RealtimeLog[]>([]);
     const [searchEndpoint, setSearchEndpoint] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [searchResults, setSearchResults] = useState<EndpointStats[]>([]);
     const [searchLoading, setSearchLoading] = useState(false);
     const [searchError, setSearchError] = useState(false);
+    const refreshTimeout = useRef<number | undefined>(undefined);
 
     useEffect(() => {
         let active = true;
@@ -40,7 +40,7 @@ export const Dashboard: React.FC = () => {
             setDashboardError(false);
 
             try {
-                const response = await api.getDashboard(timeRange, dataSource);
+                const response = await api.getDashboard(timeRange);
                 if (!active) return;
                 setData(response.data.data as DashboardData);
             } catch {
@@ -56,7 +56,7 @@ export const Dashboard: React.FC = () => {
             active = false;
             window.clearInterval(interval);
         };
-    }, [timeRange, dataSource, reloadKey]);
+    }, [timeRange, reloadKey]);
 
     useEffect(() => {
         const newSocket = io(process.env.REACT_APP_SOCKET_URL!, {
@@ -76,6 +76,8 @@ export const Dashboard: React.FC = () => {
             if (!isRecord(event) || !isRealtimeLog(event.log)) return;
             const log = event.log;
             setRealtimeLogs(previous => [log, ...previous].slice(0, 10));
+            window.clearTimeout(refreshTimeout.current);
+            refreshTimeout.current = window.setTimeout(() => setReloadKey(value => value + 1), 750);
         });
 
         newSocket.on('error-alert', (event: unknown) => {
@@ -89,6 +91,7 @@ export const Dashboard: React.FC = () => {
 
         return () => {
             newSocket.close();
+            window.clearTimeout(refreshTimeout.current);
         };
     }, []);
 
@@ -106,7 +109,7 @@ export const Dashboard: React.FC = () => {
 
         const search = async () => {
             try {
-                const response = await api.searchEndpoints(searchEndpoint, timeRange, statusFilter, dataSource);
+                const response = await api.searchEndpoints(searchEndpoint, timeRange, statusFilter);
                 if (active) setSearchResults(response.data.data as EndpointStats[]);
             } catch {
                 if (active) {
@@ -122,11 +125,17 @@ export const Dashboard: React.FC = () => {
         return () => {
             active = false;
         };
-    }, [searchEndpoint, timeRange, statusFilter, dataSource]);
+    }, [searchEndpoint, timeRange, statusFilter]);
 
-    const logout = () => {
-        sessionStorage.removeItem('apiToken');
-        window.location.reload();
+    const logout = async () => {
+        try {
+            await api.logout();
+        } catch {
+            // Local sign-out still protects this browser if the request fails.
+        } finally {
+            sessionStorage.removeItem('apiToken');
+            window.location.reload();
+        }
     };
 
     if (loading && !data) return <DashboardLoading />;
@@ -157,7 +166,7 @@ export const Dashboard: React.FC = () => {
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                         <ThemeToggle />
-                        <Button variant="outline" onClick={logout}>Log out</Button>
+                        <Button variant="outline" onClick={() => void logout()}>Log out</Button>
                     </div>
                 </div>
             </header>
@@ -170,7 +179,7 @@ export const Dashboard: React.FC = () => {
                     </Alert>
                 )}
 
-                <section aria-labelledby="dashboard-filters" className="grid gap-4 border-b border-border pb-6 sm:grid-cols-2 lg:grid-cols-[minmax(0,220px)_minmax(0,220px)_1fr]">
+                <section aria-labelledby="dashboard-filters" className="grid gap-4 border-b border-border pb-6 sm:grid-cols-2 lg:grid-cols-[minmax(0,220px)_1fr]">
                     <h2 id="dashboard-filters" className="sr-only">Dashboard filters</h2>
                     <div className="space-y-2">
                         <Label htmlFor="time-range">Time range</Label>
@@ -179,13 +188,6 @@ export const Dashboard: React.FC = () => {
                             <option value="6 hours">Last 6 hours</option>
                             <option value="24 hours">Last 24 hours</option>
                             <option value="7 days">Last 7 days</option>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="data-source">Data source</Label>
-                        <Select id="data-source" value={dataSource} onValueChange={value => setDataSource(value as DataSource)}>
-                            <option value="live">Live data</option>
-                            <option value="sample">Sample data</option>
                         </Select>
                     </div>
                 </section>
@@ -210,10 +212,10 @@ export const Dashboard: React.FC = () => {
 
                 <section className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
                     <Chart data={data.timeSeries} type="area" title="Request Volume Over Time" />
-                    <ErrorList errors={data.topErrors} dataSource={dataSource} />
+                    <ErrorList errors={data.topErrors} />
                 </section>
 
-                {dataSource === 'live' && realtimeLogs.length > 0 && (
+                {realtimeLogs.length > 0 && (
                     <Card>
                         <CardHeader>
                             <CardTitle>Live Activity</CardTitle>
@@ -294,7 +296,7 @@ export const Dashboard: React.FC = () => {
                             <CardTitle id="ai-insights">AI Insights: <span className="font-normal text-muted-foreground">Automated analysis of monitored API traffic.</span></CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <AIInsights dataSource={dataSource} />
+                            <AIInsights />
                         </CardContent>
                     </Card>
                 </section>

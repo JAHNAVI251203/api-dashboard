@@ -1,5 +1,3 @@
-export type DataSource = 'live' | 'sample';
-
 export type MetricValue = number | string;
 
 export interface DashboardOverview {
@@ -38,7 +36,6 @@ export interface DashboardData {
     topErrors: TopError[];
     timeSeries: TimeSeriesPoint[];
     aiSummary?: string;
-    dataSource: DataSource;
     timestamp: string;
 }
 
