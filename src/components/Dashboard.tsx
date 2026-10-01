@@ -23,7 +23,8 @@ export const Dashboard: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [dashboardError, setDashboardError] = useState(false);
     const [reloadKey, setReloadKey] = useState(0);
-    const [timeRange, setTimeRange] = useState('7 days');
+    const [timeRange, setTimeRange] = useState('1 hour');
+    const [scenarioRunning, setScenarioRunning] = useState(false);
     const [realtimeLogs, setRealtimeLogs] = useState<RealtimeLog[]>([]);
     const [searchEndpoint, setSearchEndpoint] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -59,9 +60,7 @@ export const Dashboard: React.FC = () => {
     }, [timeRange, reloadKey]);
 
     useEffect(() => {
-        const newSocket = io(process.env.REACT_APP_SOCKET_URL!, {
-            auth: { token: sessionStorage.getItem('apiToken') },
-        });
+        const newSocket = io(process.env.REACT_APP_SOCKET_URL!);
 
         newSocket.on('connect', () => {
             newSocket.emit('subscribe', 'logs');
@@ -127,14 +126,15 @@ export const Dashboard: React.FC = () => {
         };
     }, [searchEndpoint, timeRange, statusFilter]);
 
-    const logout = async () => {
+    const runDemoScenario = async () => {
+        setScenarioRunning(true);
         try {
-            await api.logout();
+            await api.runDemoScenario();
+            toast.success('Demo scenario completed. AI insights will refresh in the background.');
         } catch {
-            // Local sign-out still protects this browser if the request fails.
+            toast.error('The demo scenario could not run. Please try again.');
         } finally {
-            sessionStorage.removeItem('apiToken');
-            window.location.reload();
+            setScenarioRunning(false);
         }
     };
 
@@ -161,12 +161,14 @@ export const Dashboard: React.FC = () => {
                     <div>
                         <div>
                             <p className="text-xl font-bold uppercase tracking-[0.1em] text-primary sm:text-2xl">API Sentinel</p>
-                            <p className="mt-1 text-sm text-muted-foreground">AI-powered API analytics and monitoring platform</p>
+                            <p className="mt-1 text-sm text-muted-foreground">Backend-focused API telemetry, queues, caching, and real-time analytics.</p>
                         </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                         <ThemeToggle />
-                        <Button variant="outline" onClick={() => void logout()}>Log out</Button>
+                        <Button onClick={() => void runDemoScenario()} disabled={scenarioRunning}>
+                            {scenarioRunning ? 'Running…' : 'Run Demo Scenario'}
+                        </Button>
                     </div>
                 </div>
             </header>
