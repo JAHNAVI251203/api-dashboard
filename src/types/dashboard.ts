@@ -4,6 +4,8 @@ export interface DashboardOverview {
     totalRequests: MetricValue;
     avgResponseTime: MetricValue;
     maxResponseTime: MetricValue;
+    errorCount?: MetricValue;
+    successCount?: MetricValue;
     errorRate: MetricValue;
     successRate: MetricValue;
 }
@@ -30,9 +32,15 @@ export interface TopError {
     last_seen: string;
 }
 
+export interface StatusCodeCount {
+    status_code: number | string;
+    count: MetricValue;
+}
+
 export interface DashboardData {
     overview: DashboardOverview;
     endpoints: EndpointStats[];
+    statusCodes: StatusCodeCount[];
     topErrors: TopError[];
     timeSeries: TimeSeriesPoint[];
     aiSummary?: string;

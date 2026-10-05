@@ -65,3 +65,14 @@
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
   }
 }
+
+.recharts-wrapper:focus,
+.recharts-wrapper:focus-visible,
+.recharts-wrapper .recharts-surface:focus,
+.recharts-wrapper .recharts-surface:focus-visible {
+  outline: none;
+}
+
+.live-activity [aria-hidden='true'] {
+  display: none;
+}

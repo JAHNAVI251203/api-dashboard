@@ -45,7 +45,6 @@ export const ThemeToggle: React.FC = () => {
         <Button
             variant="outline"
             size="icon"
-            className="rounded-full"
             onClick={nextTheme}
             aria-label={`Use ${nextMode} theme. Current theme: ${theme}.`}
         >

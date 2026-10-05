@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { Badge } from './ui/badge';
 import { Skeleton } from './ui/skeleton';
 
 interface ErrorAnalysis {
@@ -79,66 +78,64 @@ export const AIInsights: React.FC = () => {
         <div className="grid items-stretch gap-4 lg:grid-cols-2">
             {errorAnalysis?.severity && (
                 <section className="flex h-full flex-col border border-border bg-card p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                            <h3 className="font-semibold">AI Error Analysis</h3>
-                        </div>
-                        <Badge variant={getSeverityVariant(errorAnalysis.severity)}>{errorAnalysis.severity.toUpperCase()}</Badge>
-                    </div>
+                    <h3 className="font-semibold">Error Analysis</h3>
                     <div className="mt-4 grid flex-1 content-start gap-3 text-sm sm:grid-cols-2">
                         <div className="border border-border bg-muted p-3">
-                            <p className="font-medium">Root cause</p>
-                            <p className="mt-2 text-muted-foreground">{errorAnalysis.rootCause ?? 'Not available'}</p>
+                            <p className="font-medium">Severity:</p>
+                            <p className={`mt-2 font-semibold ${severityTextClass(errorAnalysis.severity)}`}>{errorAnalysis.severity.toUpperCase()}</p>
                         </div>
                         <div className="border border-border bg-muted p-3">
-                            <p className="font-medium">Suggested fix</p>
-                            <p className="mt-2 text-muted-foreground">{errorAnalysis.suggestedFix ?? 'Not available'}</p>
+                            <p className="font-medium">Root cause:</p>
+                            <p className="mt-2 text-muted-foreground">{errorAnalysis.rootCause ?? 'Not available'}</p>
                         </div>
                         {errorAnalysis.affectedEndpoints && errorAnalysis.affectedEndpoints.length > 0 && (
-                            <div className="border border-border bg-muted p-3 sm:col-span-2">
-                                <p className="font-medium">Affected endpoints</p>
+                            <div className="border border-border bg-muted p-3">
+                                <p className="font-medium">Affected endpoints:</p>
                                 <ul className="mt-1 list-inside list-disc text-muted-foreground">
                                     {errorAnalysis.affectedEndpoints.map(endpoint => <li key={endpoint}>{endpoint}</li>)}
                                 </ul>
                             </div>
                         )}
+                        <div className="border border-border bg-muted p-3 sm:col-span-2">
+                            <p className="font-medium">Suggested fix:</p>
+                            <p className="mt-2 text-muted-foreground">{errorAnalysis.suggestedFix ?? 'Not available'}</p>
+                        </div>
                     </div>
                 </section>
             )}
 
-            {errorAnalysis?.message && !errorAnalysis.severity && (
-                <Alert className="lg:col-span-2">
-                    <AlertTitle>AI Error Analysis</AlertTitle>
-                    <AlertDescription>No monitored API errors are available for analysis.</AlertDescription>
-                </Alert>
+            {!errorAnalysis?.severity && (
+                <section className="flex h-full flex-col border border-border bg-card p-4">
+                    <h3 className="font-semibold">Error Analysis</h3>
+                    <p className="mt-4 text-sm text-muted-foreground">{errorAnalysis?.message ?? 'No monitored API errors are available for analysis.'}</p>
+                </section>
             )}
 
             {anomalies?.hasAnomaly && anomalies.anomalyType && anomalies.anomalyType !== 'none' && (
                 <section className="flex h-full flex-col border border-border bg-card p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                            <h3 className="font-semibold">Anomaly Detection</h3>
-                        </div>
-                        <Badge variant="warning">{(anomalies.severity ?? 'unknown').toUpperCase()}</Badge>
-                    </div>
+                    <h3 className="font-semibold">Anomaly Detection</h3>
                     <div className="mt-4 grid flex-1 content-start gap-3 text-sm sm:grid-cols-2">
-                        <p className="border border-border bg-muted p-3"><span className="font-medium">Type:</span><br />{anomalies.anomalyType.replace('_', ' ').toUpperCase()}</p>
-                        <p className="border border-border bg-muted p-3"><span className="font-medium">Severity:</span><br />{(anomalies.severity ?? 'unknown').toUpperCase()}</p>
-                        <p className="border border-border bg-muted p-3 sm:col-span-2"><span className="font-medium">Explanation:</span><br />{anomalies.explanation ?? 'Not available'}</p>
-                        <p className="border border-border bg-muted p-3 sm:col-span-2"><span className="font-medium">Recommendation:</span><br />{anomalies.recommendation ?? 'Review recent API traffic.'}</p>
+                        <p className="border border-border bg-muted p-3 text-muted-foreground"><span className="font-medium text-foreground">Type:</span><br />{anomalies.anomalyType.replace('_', ' ').toUpperCase()}</p>
+                        <p className="border border-border bg-muted p-3 text-muted-foreground"><span className="font-medium text-foreground">Severity:</span><br /><span className={`font-semibold ${severityTextClass(anomalies.severity)}`}>{(anomalies.severity ?? 'unknown').toUpperCase()}</span></p>
+                        <p className="border border-border bg-muted p-3 text-muted-foreground sm:col-span-2"><span className="font-medium text-foreground">Explanation:</span><br />{anomalies.explanation ?? 'Not available'}</p>
+                        <p className="border border-border bg-muted p-3 text-muted-foreground sm:col-span-2"><span className="font-medium text-foreground">Recommendation:</span><br />{anomalies.recommendation ?? 'Review recent API traffic.'}</p>
                     </div>
                 </section>
             )}
 
-            {!errorAnalysis?.severity && !errorAnalysis?.message && !anomalies?.hasAnomaly && (
-                <p className="text-sm text-muted-foreground lg:col-span-2">No AI insights are available for the current telemetry.</p>
+            {(!anomalies?.hasAnomaly || !anomalies.anomalyType || anomalies.anomalyType === 'none') && (
+                <section className="flex h-full flex-col border border-border bg-card p-4">
+                    <h3 className="font-semibold">Anomaly Detection</h3>
+                    <p className="mt-4 text-sm text-muted-foreground">No anomalies were detected in the current telemetry.</p>
+                </section>
             )}
         </div>
     );
 };
 
-const getSeverityVariant = (severity: string): 'default' | 'destructive' | 'warning' | 'success' => {
-    if (severity === 'critical' || severity === 'high') return 'destructive';
-    if (severity === 'medium') return 'warning';
-    return 'success';
+const severityTextClass = (severity?: string) => {
+    if (severity === 'critical' || severity === 'high') return 'text-red-600 dark:text-red-400';
+    if (severity === 'medium') return 'text-amber-600 dark:text-amber-400';
+    if (severity === 'low') return 'text-emerald-600 dark:text-emerald-400';
+    return 'text-muted-foreground';
 };

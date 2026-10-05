@@ -2,21 +2,18 @@ import React, { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
 import { toast } from 'react-toastify';
 import { api } from '../services/api';
-import { exportToCSV } from '../utils/export';
 import { AIInsights } from './AIInsights';
 import { Chart } from './Chart';
-import { ErrorList } from './ErrorList';
+import { StatusCodeDistribution, TopEndpoints, TrafficSummary } from './DashboardPanels';
 import { MetricsCard } from './MetricsCard';
 import { ThemeToggle } from './ThemeToggle';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Input } from './ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Label } from './ui/label';
 import { Select } from './ui/select';
 import { Skeleton } from './ui/skeleton';
-import { DashboardData, EndpointStats, MetricValue, RealtimeLog } from '../types/dashboard';
+import { DashboardData, MetricValue, RealtimeLog } from '../types/dashboard';
 
 export const Dashboard: React.FC = () => {
     const [data, setData] = useState<DashboardData | null>(null);
@@ -26,11 +23,6 @@ export const Dashboard: React.FC = () => {
     const [timeRange, setTimeRange] = useState('1 hour');
     const [scenarioRunning, setScenarioRunning] = useState(false);
     const [realtimeLogs, setRealtimeLogs] = useState<RealtimeLog[]>([]);
-    const [searchEndpoint, setSearchEndpoint] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [searchResults, setSearchResults] = useState<EndpointStats[]>([]);
-    const [searchLoading, setSearchLoading] = useState(false);
-    const [searchError, setSearchError] = useState(false);
     const refreshTimeout = useRef<number | undefined>(undefined);
 
     useEffect(() => {
@@ -94,43 +86,11 @@ export const Dashboard: React.FC = () => {
         };
     }, []);
 
-    useEffect(() => {
-        if (!searchEndpoint.trim()) {
-            setSearchResults([]);
-            setSearchError(false);
-            setSearchLoading(false);
-            return undefined;
-        }
-
-        let active = true;
-        setSearchLoading(true);
-        setSearchError(false);
-
-        const search = async () => {
-            try {
-                const response = await api.searchEndpoints(searchEndpoint, timeRange, statusFilter);
-                if (active) setSearchResults(response.data.data as EndpointStats[]);
-            } catch {
-                if (active) {
-                    setSearchResults([]);
-                    setSearchError(true);
-                }
-            } finally {
-                if (active) setSearchLoading(false);
-            }
-        };
-
-        void search();
-        return () => {
-            active = false;
-        };
-    }, [searchEndpoint, timeRange, statusFilter]);
-
     const runDemoScenario = async () => {
         setScenarioRunning(true);
         try {
             await api.runDemoScenario();
-            toast.success('Demo scenario completed. AI insights will refresh in the background.');
+            toast.success('Demo scenario completed. Processing new telemetry; insights will update shortly.');
         } catch {
             toast.error('The demo scenario could not run. Please try again.');
         } finally {
@@ -195,101 +155,56 @@ export const Dashboard: React.FC = () => {
                 </section>
 
                 <section aria-label="Key metrics" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <MetricsCard title="Total Requests" value={formatNumber(overview.totalRequests)} />
-                    <MetricsCard title="Avg Response Time" value={`${overview.avgResponseTime}ms`} subtext={`Max: ${overview.maxResponseTime}ms`} />
-                    <MetricsCard title="Error Rate" value={`${overview.errorRate}%`} trend={Number(overview.errorRate) > 5 ? 'down' : 'neutral'} />
-                    <MetricsCard title="Success Rate" value={`${overview.successRate}%`} trend="up" />
+                    <MetricsCard title="Total Hits" value={formatNumber(overview.totalRequests)} detail={formatTimeRange(timeRange)} tone="blue" icon="hits" />
+                    <MetricsCard title="Avg Response Time" value={formatDuration(overview.avgResponseTime)} detail={`Max response: ${formatDuration(overview.maxResponseTime)}`} tone="violet" icon="latency" />
+                    <MetricsCard title="Success Rate" value={`${overview.successRate}%`} detail={`${formatNumber(overview.successCount ?? 0)} successful requests`} tone="green" icon="success" />
+                    <MetricsCard title="Error Rate" value={`${overview.errorRate}%`} detail={`${formatNumber(overview.errorCount ?? 0)} errors`} tone="red" icon="errors" />
+                </section>
+
+                <section aria-label="API traffic and status code visuals" className="grid gap-4 lg:grid-cols-2">
+                    <TrafficSummary overview={overview} />
+                    <StatusCodeDistribution statusCodes={data.statusCodes ?? []} />
                 </section>
 
                 {data.aiSummary && (
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                                <span>AI Summary: <span className="font-normal text-muted-foreground">Cached overview of the selected API traffic.</span></span>
+                                <span>AI Summary: <span className="font-normal text-muted-foreground">API health overview with prioritized developer actions.</span></span>
                             </CardTitle>
                         </CardHeader>
-                        <CardContent><p className="text-sm leading-6 text-muted-foreground">{data.aiSummary}</p></CardContent>
+                        <CardContent><p className="whitespace-pre-line text-sm leading-6 text-muted-foreground">{data.aiSummary}</p></CardContent>
                     </Card>
                 )}
-
-                <section className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-                    <Chart data={data.timeSeries} type="area" title="Request Volume Over Time" />
-                    <ErrorList errors={data.topErrors} />
-                </section>
 
                 {realtimeLogs.length > 0 && (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Live Activity</CardTitle>
-                            <CardDescription>Recent requests received through the live Socket.IO stream.</CardDescription>
+                            <CardTitle>Live Activity: <span className="font-normal text-muted-foreground">Recent requests received through the live Socket.IO stream.</span></CardTitle>
                         </CardHeader>
-                        <CardContent className="max-h-80 overflow-auto p-0">
+                        <CardContent className="live-activity max-h-80 overflow-auto p-0">
+                            <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 border-b border-border bg-muted/50 px-5 py-2 text-center text-xs font-medium text-muted-foreground sm:grid">
+                                <span>Method</span>
+                                <span>URL</span>
+                                <span>Status Code</span>
+                                <span>Response Time</span>
+                            </div>
                             {realtimeLogs.map((log, index) => (
-                                <div key={`${log.endpoint}-${log.method}-${index}`} className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-border px-5 py-3 text-sm first:border-t-0">
+                                <div key={`${log.endpoint}-${log.method}-${index}`} className="grid gap-2 border-t border-border px-5 py-3 text-center text-sm first:border-t-0 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] sm:items-center sm:gap-4">
                                     <span aria-hidden="true" className={log.status_code >= 400 ? 'text-red-600' : 'text-emerald-600'}>●</span>
-                                    <span className="font-medium">{log.method} {log.endpoint}</span>
-                                    <span className="text-muted-foreground">{log.status_code} | {log.response_time}ms</span>
+                                    <span className="font-mono text-xs font-semibold">{log.method}</span>
+                                    <span className="min-w-0 truncate font-medium">{log.endpoint}</span>
+                                    <span className={log.status_code >= 400 ? 'font-medium text-red-600' : 'font-medium text-emerald-600'}>{log.status_code}</span>
+                                    <span className="tabular-nums text-muted-foreground">{formatDuration(log.response_time)}</span>
                                 </div>
                             ))}
                         </CardContent>
                     </Card>
                 )}
 
-                <section aria-labelledby="endpoint-search" className="w-full space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle id="endpoint-search">Endpoint Search: <span className="font-normal text-muted-foreground">Filter monitored endpoints by path and response status.</span></CardTitle>
-                        </CardHeader>
-                        <CardContent className="grid items-end gap-4 sm:grid-cols-[minmax(0,1fr)_220px]">
-                            <div>
-                                <Input id="endpoint-search-input" aria-label="Search endpoint" placeholder="Search endpoint..." className="rounded-none" value={searchEndpoint} onChange={event => setSearchEndpoint(event.target.value)} />
-                            </div>
-                            <div>
-                                <Select id="status-filter" aria-label="Filter endpoint status" value={statusFilter} onValueChange={setStatusFilter}>
-                                    <option value="all">All status</option>
-                                    <option value="2xx">Success (2xx)</option>
-                                    <option value="4xx">Client errors (4xx)</option>
-                                    <option value="5xx">Server errors (5xx)</option>
-                                </Select>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {searchLoading && <Skeleton className="h-28 w-full" aria-label="Loading endpoint results" />}
-                    {searchError && (
-                        <Alert variant="warning">
-                            <AlertTitle>Endpoint search unavailable</AlertTitle>
-                            <AlertDescription>We could not retrieve endpoint results right now. Please try again.</AlertDescription>
-                        </Alert>
-                    )}
-                    {!searchLoading && !searchError && searchEndpoint.trim() && searchResults.length > 0 && (
-                        <Card>
-                            <CardHeader>
-                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                    <div>
-                                        <CardTitle>Endpoint Search Results</CardTitle>
-                                    </div>
-                                    <Button variant="outline" onClick={() => { exportToCSV(data.endpoints, 'endpoints'); toast.success('CSV exported successfully!'); }}>Export CSV</Button>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="space-y-0 p-0">
-                                {searchResults.map((item, index) => (
-                                    <div key={`${item.endpoint}-${item.method}-${index}`} className="grid gap-2 border-t border-border px-5 py-4 text-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-                                        <div className="min-w-0">
-                                            <p className="truncate font-medium">{item.method} {item.endpoint}</p>
-                                            <p className="mt-1 text-xs text-muted-foreground">{formatNumber(item.request_count)} requests | {Math.round(Number(item.avg_response_time))}ms average</p>
-                                        </div>
-                                        <Badge variant={Number(item.error_count) > 0 ? 'destructive' : 'success'}>{formatNumber(item.error_count)} errors</Badge>
-                                    </div>
-                                ))}
-                            </CardContent>
-                        </Card>
-                    )}
-                    {!searchLoading && !searchError && searchEndpoint.trim() && searchResults.length === 0 && (
-                        <Alert>
-                            <AlertDescription>No monitored endpoints matched.</AlertDescription>
-                        </Alert>
-                    )}
+                <section className="grid items-stretch gap-4 lg:grid-cols-2">
+                    <Chart data={data.timeSeries} timeRange={timeRange} type="area" title="API Traffic Timeline" description={formatTimelineDescription(timeRange)} />
+                    <TopEndpoints endpoints={data.endpoints} />
                 </section>
 
                 <section aria-labelledby="ai-insights">
@@ -318,6 +233,33 @@ const DashboardLoading: React.FC = () => (
 );
 
 const formatNumber = (value: MetricValue) => Number(value).toLocaleString();
+
+const formatDuration = (value: MetricValue) => {
+    const milliseconds = Number(value);
+    return milliseconds >= 1000 ? `${(milliseconds / 1000).toFixed(1)} s` : `${milliseconds} ms`;
+};
+
+const formatTimeRange = (timeRange: string) => timeRange === '1 hour' ? 'Last hour' : `Last ${timeRange}`;
+
+const timelineHours: Record<string, number> = {
+    '1 hour': 1,
+    '6 hours': 6,
+    '24 hours': 24,
+};
+
+const formatTimelineDescription = (timeRange: string) => {
+    if (timeRange === '7 days') return 'Daily request and error totals for the last 7 days.';
+
+    const end = new Date();
+    end.setSeconds(0, 0);
+    const start = new Date(end.getTime() - timelineHours[timeRange] * 60 * 60 * 1000);
+    const formatTime = (date: Date) => date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+    if (timeRange !== '24 hours') return `Requests and errors from ${formatTime(start)} to ${formatTime(end)}.`;
+
+    const formatDateTime = (date: Date) => `${date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' })} (${formatTime(date)})`;
+    return `Requests and errors from ${formatDateTime(start)} to ${formatDateTime(end)}.`;
+};
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 
