@@ -4,6 +4,11 @@ The React dashboard for API Sentinel, a backend-focused API telemetry and analyt
 
 This repository contains the dashboard only. The ingestion pipeline, queues, workers, database, Redis, alerting, and API live in the separate `api-analytics` backend repository.
 
+## Demo
+
+- Dashboard: https://ai-api-analytics-dashboard.vercel.app
+- Backend: https://ai-api-analytics-platform-production.up.railway.app
+
 ## What It Shows
 
 - Request volume, average and maximum response time, success rate, and error rate for the selected window.
@@ -106,11 +111,6 @@ npm run build   # create an optimized production build
 ## Docker
 
 The provided Dockerfile builds the React application with configurable `REACT_APP_API_URL` and `REACT_APP_SOCKET_URL` build arguments, then serves the static output from Nginx on port 80. The sibling backend Compose configuration supplies both values for the full local stack.
-
-## Demo
-
-- Dashboard: https://ai-api-analytics-dashboard.vercel.app
-- Backend: https://ai-api-analytics-platform-production.up.railway.app
 
 ## Companion Backend
 
