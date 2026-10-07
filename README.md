@@ -18,15 +18,15 @@ This repository contains the dashboard only. The ingestion pipeline, queues, wor
 - Error notifications for failed monitored API requests.
 - Four time windows: last hour, 6 hours, 24 hours, and 7 days.
 - Light and dark themes, responsive layouts, loading skeletons, empty states, retry UI, and toast feedback.
-- A controlled **Run Demo Scenario** action that asks the backend to run its 20-request Demo API scenario.
+- A controlled **Run Demo Scenario** action that asks the backend to queue 20 demo telemetry events.
 
 ## How It Works
 
 ```text
 React dashboard
-  ├─ GET /dashboard          → metrics, timeline, endpoint and status data
-  ├─ GET /ai/*               → cached or pending worker-produced insights
-  ├─ POST /demo/run          → controlled backend demo scenario
+  ├─ GET /api/dashboard      → metrics, timeline, endpoint and status data
+  ├─ GET /api/ai/*           → cached or pending worker-produced insights
+  ├─ POST /api/demo/run      → controlled backend demo scenario
   └─ Socket.IO subscriptions → new telemetry and failed-request notifications
 ```
 
@@ -47,10 +47,10 @@ The dashboard loads analytics when the selected time range changes and refreshes
 
 | Method | Endpoint | Used for |
 | --- | --- | --- |
-| `GET` | `/dashboard?timeRange=...` | Overview cards, charts, status distribution, endpoints, and the cached dashboard summary. |
-| `GET` | `/ai/analyze-errors` | Cached/pending error analysis. |
-| `GET` | `/ai/detect-anomalies` | Cached/pending anomaly result. |
-| `POST` | `/demo/run` | Starts the backend's controlled demo scenario. |
+| `GET` | `/api/dashboard?timeRange=...` | Overview cards, charts, status distribution, endpoints, and the cached dashboard summary. |
+| `GET` | `/api/ai/analyze-errors` | Cached/pending error analysis. |
+| `GET` | `/api/ai/detect-anomalies` | Cached/pending anomaly result. |
+| `POST` | `/api/demo/run` | Starts the backend's controlled demo scenario. |
 
 The dashboard expects the backend API and Socket.IO server to be reachable at the environment values below. Core analytics remain separate from AI results: the UI can still show dashboard data if AI insight requests fail.
 
@@ -92,13 +92,15 @@ npm start
 Set the following values in `.env`:
 
 ```env
-REACT_APP_API_URL=http://localhost:8000
+REACT_APP_API_URL=http://localhost:8000/api
 REACT_APP_SOCKET_URL=http://localhost:8000
 ```
 
+For Vercel production, set `REACT_APP_API_URL` to the Railway origin followed by `/api` (for example, `https://api.example.com/api`) and set `REACT_APP_SOCKET_URL` to the Railway origin. Redeploy after changing either value because Create React App embeds them at build time.
+
 The development server opens at `http://localhost:3000`.
 
-For the complete local system—including PostgreSQL, Redis, the Express API, BullMQ worker, Demo API, and this dashboard—run `docker compose up --build` from the sibling `api-analytics` repository. Its Compose file builds this dashboard from the adjacent `api-dashboard` directory.
+For the complete local system—including PostgreSQL, Redis, the Express API, BullMQ worker, and this dashboard—run `docker compose up --build` from the sibling `api-analytics` repository. Its Compose file builds this dashboard from the adjacent `api-dashboard` directory.
 
 ## Scripts
 
