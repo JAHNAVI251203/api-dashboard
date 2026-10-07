@@ -90,7 +90,7 @@ export const Dashboard: React.FC = () => {
         setScenarioRunning(true);
         try {
             await api.runDemoScenario();
-            toast.success('Demo scenario completed. Processing new telemetry; insights will update shortly.');
+            toast.success('Demo scenario queued. Processing telemetry; insights will update shortly.');
         } catch {
             toast.error('The demo scenario could not run. Please try again.');
         } finally {
@@ -183,14 +183,15 @@ export const Dashboard: React.FC = () => {
                             <CardTitle>Live Activity: <span className="font-normal text-muted-foreground">Recent requests received through the live Socket.IO stream.</span></CardTitle>
                         </CardHeader>
                         <CardContent className="live-activity max-h-80 overflow-auto p-0">
-                            <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 border-b border-border bg-muted/50 px-5 py-2 text-center text-xs font-medium text-muted-foreground sm:grid">
+                            <div className="hidden grid-cols-[24px_minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 border-b border-border bg-muted/50 px-5 py-2 text-center text-xs font-medium text-muted-foreground sm:grid">
+                                <span aria-hidden="true" />
                                 <span>Method</span>
                                 <span>URL</span>
                                 <span>Status Code</span>
                                 <span>Response Time</span>
                             </div>
                             {realtimeLogs.map((log, index) => (
-                                <div key={`${log.endpoint}-${log.method}-${index}`} className="grid gap-2 border-t border-border px-5 py-3 text-center text-sm first:border-t-0 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] sm:items-center sm:gap-4">
+                                <div key={`${log.endpoint}-${log.method}-${index}`} className="grid gap-2 border-t border-border px-5 py-3 text-center text-sm first:border-t-0 sm:grid-cols-[24px_minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] sm:items-center sm:gap-4">
                                     <span aria-hidden="true" className={log.status_code >= 400 ? 'text-red-600' : 'text-emerald-600'}>●</span>
                                     <span className="font-mono text-xs font-semibold">{log.method}</span>
                                     <span className="min-w-0 truncate font-medium">{log.endpoint}</span>

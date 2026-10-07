@@ -8,15 +8,6 @@ export const api = {
 
     runDemoScenario: () => client.post('/demo/run'),
 
-    searchEndpoints(search: string, timeRange: string, statusFilter: string) {
-        return client.get(
-            '/dashboard/search-endpoints',
-            {
-                params: { search, timeRange, statusFilter }
-            }
-        );
-    },
-
     getAIAnalysis: () => client.get('/ai/analyze-errors'),
 
     getAnomalies: () => client.get('/ai/detect-anomalies')

@@ -96,7 +96,14 @@ REACT_APP_API_URL=http://localhost:8000/api
 REACT_APP_SOCKET_URL=http://localhost:8000
 ```
 
-For Vercel production, set `REACT_APP_API_URL` to the Railway origin followed by `/api` (for example, `https://api.example.com/api`) and set `REACT_APP_SOCKET_URL` to the Railway origin. Redeploy after changing either value because Create React App embeds them at build time.
+For the current Vercel production deployment, set:
+
+```env
+REACT_APP_API_URL=https://ai-api-analytics-platform-production.up.railway.app/api
+REACT_APP_SOCKET_URL=https://ai-api-analytics-platform-production.up.railway.app
+```
+
+Redeploy after changing either value because Create React App embeds them at build time.
 
 The development server opens at `http://localhost:3000`.
 
